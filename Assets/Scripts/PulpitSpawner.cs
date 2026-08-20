@@ -34,6 +34,14 @@ public class PulpitSpawner : MonoBehaviour
         Vector3 startPosition = Vector3.zero;
 
         currentPulpit = SpawnPulpit(startPosition);
+
+        TileScoreTrigger scoreTrigger =
+            currentPulpit.GetComponentInChildren<TileScoreTrigger>();
+
+        if (scoreTrigger != null)
+        {
+            scoreTrigger.SetScoringEnabled(false);
+        }
     }
 
     private Pulpit SpawnPulpit(Vector3 position)

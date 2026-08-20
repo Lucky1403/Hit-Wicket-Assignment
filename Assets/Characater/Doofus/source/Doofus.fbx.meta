@@ -526,7 +526,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 1.1
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -591,77 +591,77 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
     - name: hip
       parentName: Bone
-      position: {x: -0, y: 0.007467029, z: 0}
+      position: {x: -0, y: 0.00008213732, z: 0}
       rotation: {x: 0.08248052, y: -0, z: -0, w: 0.9965927}
       scale: {x: 1, y: 1, z: 1}
     - name: Spine
       parentName: hip
-      position: {x: -0, y: 0.0012727482, z: -1.8626451e-11}
+      position: {x: -0, y: 0.000014000229, z: -2.0489097e-13}
       rotation: {x: -0.16830738, y: 0.00000011750871, z: -0.000000020063805, w: 0.9857346}
       scale: {x: 1, y: 0.99999994, z: 1}
     - name: Spine1
       parentName: Spine
-      position: {x: 1.3322676e-17, y: 0.0021696375, z: -5.5879353e-11}
+      position: {x: 1.4654943e-19, y: 0.000023866012, z: -6.1467286e-13}
       rotation: {x: 0.1298334, y: 3.909552e-14, z: 0.0000000309547, w: 0.99153584}
       scale: {x: 1, y: 0.99999994, z: 0.99999994}
     - name: head
       parentName: Spine1
-      position: {x: 4.2839513e-11, y: 0.003514361, z: -0.00017968185}
+      position: {x: 4.712346e-13, y: 0.00003865797, z: -0.0000019765005}
       rotation: {x: 0.0000000047850235, y: 0.9998255, z: -0.018682696, w: -0.00000013327072}
       scale: {x: 1, y: 1, z: 1}
     - name: upper_arm_L
       parentName: Spine1
-      position: {x: -0.0021172946, y: 0.0015851803, z: -0.000067934394}
+      position: {x: -0.00002329024, y: 0.000017436983, z: -0.00000074727836}
       rotation: {x: 0.52435553, y: -0.5183223, z: -0.472168, w: -0.48316735}
       scale: {x: 1.0000005, y: 0.99999994, z: 1}
     - name: arm_L
       parentName: upper_arm_L
-      position: {x: -2.1827872e-12, y: 0.0024713108, z: -5.204017e-10}
+      position: {x: -2.4010658e-14, y: 0.000027184416, z: -5.7244183e-12}
       rotation: {x: -0.0047440105, y: -0.0039400244, z: 0.08504156, w: 0.99635834}
       scale: {x: 1, y: 0.99999994, z: 0.9999999}
     - name: upper_arm_R
       parentName: Spine1
-      position: {x: 0.0021172946, y: 0.0015851803, z: -0.0000679334}
+      position: {x: 0.00002329024, y: 0.000017436983, z: -0.00000074726734}
       rotation: {x: 0.5243557, y: 0.51832217, z: 0.47216836, w: -0.48316696}
       scale: {x: 1.0000008, y: 1.0000001, z: 1.0000002}
     - name: arm_R
       parentName: upper_arm_R
-      position: {x: -1.3824319e-12, y: 0.0024713113, z: 1.3769609e-10}
+      position: {x: -1.520675e-14, y: 0.000027184424, z: 1.5146568e-12}
       rotation: {x: -0.0047440156, y: 0.0039399704, z: -0.08504155, w: 0.99635834}
       scale: {x: 1, y: 0.99999994, z: 0.9999999}
     - name: upper_leg_L
       parentName: hip
-      position: {x: -0.0008718271, y: -0.00023587643, z: 0.00003931273}
+      position: {x: -0.000009590098, y: -0.0000025946408, z: 0.00000043244003}
       rotation: {x: 0.70912427, y: -0.05812567, z: -0.70227236, w: -0.024036452}
       scale: {x: 1.000012, y: 1.0000001, z: 1.0000019}
     - name: leg_L
       parentName: upper_leg_L
-      position: {x: -8.2654876e-11, y: 0.0034342387, z: 6.577466e-11}
+      position: {x: -9.0920365e-13, y: 0.000037776626, z: 7.235212e-13}
       rotation: {x: 0.019539228, y: 0.005012807, z: -0.06852732, w: 0.99744534}
       scale: {x: 1, y: 0.9999999, z: 1.0000001}
     - name: foot_L
       parentName: leg_L
-      position: {x: -9.313225e-11, y: 0.0032781716, z: 1.1466909e-10}
+      position: {x: -1.0244548e-12, y: 0.000036059886, z: 1.2613599e-12}
       rotation: {x: 0.47541496, y: -0.44516084, z: 0.5116682, w: 0.56036425}
       scale: {x: 0.9999998, y: 0.9999998, z: 0.99999994}
     - name: upper_leg_R
       parentName: hip
-      position: {x: 0.0008718271, y: -0.00023587643, z: 0.00003931273}
+      position: {x: 0.000009590098, y: -0.0000025946408, z: 0.00000043244003}
       rotation: {x: 0.70912427, y: 0.05812567, z: 0.70227236, w: -0.024036452}
       scale: {x: 1.000012, y: 1.0000001, z: 1.0000019}
     - name: leg_R
       parentName: upper_leg_R
-      position: {x: 8.2654876e-11, y: 0.0034342387, z: 6.577466e-11}
+      position: {x: 9.0920365e-13, y: 0.000037776626, z: 7.235212e-13}
       rotation: {x: 0.019539228, y: -0.005012807, z: 0.06852732, w: 0.99744534}
       scale: {x: 1, y: 0.9999999, z: 1.0000001}
     - name: foot_R
       parentName: leg_R
-      position: {x: 9.313225e-11, y: 0.0032781716, z: 1.1466909e-10}
+      position: {x: 1.0244548e-12, y: 0.000036059886, z: 1.2613599e-12}
       rotation: {x: 0.47541496, y: 0.44516084, z: -0.5116682, w: 0.56036425}
       scale: {x: 0.9999998, y: 0.9999998, z: 0.99999994}
     - name: bob_the_robot
       parentName: Doofus(Clone)
-      position: {x: -0, y: 0.007136941, z: 0}
+      position: {x: -0, y: 0.00007850635, z: 0}
       rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     armTwist: 0.5
@@ -671,7 +671,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0.011
     rootMotionBoneName: hip
     hasTranslationDoF: 0
     hasExtraRoot: 1

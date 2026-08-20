@@ -13,19 +13,16 @@ public class Pulpit : MonoBehaviour
     [SerializeField] private float spawnTime = 2.5f;
 
     [Header("Fade")]
-    [SerializeField] private float fadeDuration = 1.5f; // smooth fade window before destruction
+    [SerializeField] private float fadeDuration = 1.5f;
 
     [Header("UI")]
     [SerializeField] private TMP_Text timerText;
-
     private float lifetime;
     private float timer;
 
     private bool spawnTriggered;
 
     private readonly List<Material> materials = new List<Material>();
-
-    // Required by PulpitSpawner
     public event Action<Pulpit> OnSpawnNext;
     public event Action<Pulpit> OnDestroyed;
 
@@ -43,12 +40,9 @@ public class Pulpit : MonoBehaviour
 
         foreach (Renderer renderer in allRenderers)
         {
-            // Ignore TextMeshPro renderer.
-            // We don't want the countdown text to fade with the platform.
             if (renderer.GetComponent<TMP_Text>() != null)
                 continue;
 
-            // A renderer can contain multiple materials.
             foreach (Material material in renderer.materials)
             {
                 if (material != null)
@@ -58,8 +52,6 @@ public class Pulpit : MonoBehaviour
             }
         }
     }
-
-    // Called by PulpitSpawner
     public void Initialize()
     {
         lifetime = UnityEngine.Random.Range(
@@ -70,7 +62,6 @@ public class Pulpit : MonoBehaviour
         timer = 0f;
         spawnTriggered = false;
 
-        // Make sure the platform starts completely visible.
         SetAlpha(1f);
 
         UpdateTimerText();
@@ -85,10 +76,8 @@ public class Pulpit : MonoBehaviour
             lifetime - timer
         );
 
-        // Update countdown
         UpdateTimerText();
 
-        // Spawn the next Pulpit at 2.5 seconds.
         if (!spawnTriggered && timer >= spawnTime)
         {
             spawnTriggered = true;
@@ -97,7 +86,6 @@ public class Pulpit : MonoBehaviour
 
         ApplyFade(remainingTime);
 
-        // Destroy after lifetime expires.
         if (timer >= lifetime)
         {
             OnDestroyed?.Invoke(this);
@@ -107,11 +95,8 @@ public class Pulpit : MonoBehaviour
 
     private void ApplyFade(float remainingTime)
     {
-        // Ratio of remaining time within the fade window (1 = not fading yet, 0 = fully faded).
         float fadeT = Mathf.Clamp01(remainingTime / fadeDuration);
 
-        // SmoothStep gives an ease-in/ease-out curve so the fade
-        // starts and ends gently instead of moving at a constant rate.
         float alpha = Mathf.SmoothStep(0f, 1f, fadeT);
 
         SetAlpha(alpha);
@@ -127,13 +112,6 @@ public class Pulpit : MonoBehaviour
             lifetime - timer
         );
 
-        // Example:
-        // 4.73
-        // 4.72
-        // 4.71
-        // ...
-        // 0.01
-        // 0.00
         timerText.text = remainingTime.ToString("0.00");
     }
 
@@ -144,7 +122,6 @@ public class Pulpit : MonoBehaviour
             if (material == null)
                 continue;
 
-            // URP Lit materials
             if (material.HasProperty("_BaseColor"))
             {
                 Color color = material.GetColor("_BaseColor");
@@ -152,7 +129,6 @@ public class Pulpit : MonoBehaviour
 
                 material.SetColor("_BaseColor", color);
             }
-            // Built-in/legacy materials
             else if (material.HasProperty("_Color"))
             {
                 Color color = material.GetColor("_Color");
@@ -165,7 +141,6 @@ public class Pulpit : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Clean up material instances created by Renderer.materials.
         foreach (Material material in materials)
         {
             if (material != null)

@@ -53,7 +53,6 @@ public class Doofus : MonoBehaviour
         }
     }
 
-
     private void Start()
     {
         isGrounded = false;
@@ -151,12 +150,10 @@ public class Doofus : MonoBehaviour
         CheckGroundCollision(collision);
     }
 
-
     private void OnCollisionStay(Collision collision)
     {
         CheckGroundCollision(collision);
     }
-
 
     private void OnCollisionExit(Collision collision)
     {
@@ -167,7 +164,6 @@ public class Doofus : MonoBehaviour
 
         isGrounded = false;
     }
-
 
     private void CheckGroundCollision(Collision collision)
     {
