@@ -7,7 +7,9 @@ public class ScoreManager : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI scoreText;
-
+    [Header("Sound Settings")]
+    [SerializeField] private AudioClip scoreIncreaseSound;
+    [SerializeField] private AudioSource audioSource;
     private int score = 0;
 
     public int CurrentScore => score;
@@ -25,6 +27,7 @@ public class ScoreManager : MonoBehaviour
     public void AddScore(int amount = 1)
     {
         score += amount;
+        audioSource.PlayOneShot(scoreIncreaseSound);
         UpdateScoreUI();
     }
 

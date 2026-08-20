@@ -7,6 +7,9 @@ public class MainMenuController : MonoBehaviour
     [Header("Fade Settings")]
     [SerializeField] private CanvasGroup fadePanel;
     [SerializeField] private float fadeDuration = 2f;
+    [Header("Sound Settings")]
+    [SerializeField] private AudioClip UIButtonAudioClip;
+    [SerializeField] private AudioSource audioSource;
 
     private bool isLoading;
 
@@ -43,7 +46,7 @@ public class MainMenuController : MonoBehaviour
             Debug.LogError("MainMenuController: fadePanel is not assigned.", this);
             return;
         }
-
+        audioSource.PlayOneShot(UIButtonAudioClip);
         StartCoroutine(FadeAndLoadScene());
     }
 
@@ -90,6 +93,7 @@ public class MainMenuController : MonoBehaviour
     public void QuitGame()
     {
         Debug.Log("Game is exiting");
+        audioSource.PlayOneShot(UIButtonAudioClip);
         Application.Quit();
     }
 }
