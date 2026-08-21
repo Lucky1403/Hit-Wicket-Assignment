@@ -41,7 +41,9 @@ public class GameOverManager : MonoBehaviour
     public void GameOver()
     {
         if (gameOver)
+        {
             return;
+        }
 
         gameOver = true;
 
@@ -71,7 +73,9 @@ public class GameOverManager : MonoBehaviour
     public void RestartGame()
     {
         if (isRestarting)
+        {
             return;
+        }
 
         StartCoroutine(RestartGameRoutine());
     }
@@ -83,7 +87,6 @@ public class GameOverManager : MonoBehaviour
         if (audioSource != null && uiButtonAudioClip != null)
         {
             audioSource.PlayOneShot(uiButtonAudioClip);
-
             yield return new WaitForSecondsRealtime(uiButtonAudioClip.length);
         }
         else

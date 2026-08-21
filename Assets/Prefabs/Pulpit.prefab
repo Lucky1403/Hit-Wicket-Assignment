@@ -127,9 +127,9 @@ MonoBehaviour:
   minLifetime: 4
   maxLifetime: 5
   spawnTime: 2.5
-  dissolveDuration: 1.5
-  spawnDuration: 0.25
-  spawnOvershoot: 1.12
+  dissolveDuration: 0.4
+  spawnDuration: 0.15
+  spawnOvershoot: 1.08
   timerText: {fileID: 8932507203681259012}
   tileRenderer: {fileID: 2542252699143654604}
 --- !u!1 &4003033240035648632
@@ -327,8 +327,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 6
-  m_fontSizeBase: 6
+  m_fontSize: 8
+  m_fontSizeBase: 8
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

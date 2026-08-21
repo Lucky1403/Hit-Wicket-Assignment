@@ -9,7 +9,7 @@ public class Pulpit : MonoBehaviour
     [SerializeField] private float minLifetime = 4f;
     [SerializeField] private float maxLifetime = 5f;
 
-    [Header("Next Tile")]
+    [Header("Next Tile Spawn Time")]
     [SerializeField] private float spawnTime = 2.5f;
 
     [Header("Vortex Dissolve")]
@@ -32,6 +32,7 @@ public class Pulpit : MonoBehaviour
     private Vector3 originalScale;
     private MaterialPropertyBlock propertyBlock;
     private static readonly int DissolveAmountHash = Shader.PropertyToID("_DissolveAmount");
+
     public event Action<Pulpit> OnSpawnNext;
     public event Action<Pulpit> OnDestroyed;
     public float LifeTime => lifetime;
@@ -39,7 +40,6 @@ public class Pulpit : MonoBehaviour
     private void Awake()
     {
         originalScale = transform.localScale;
-
         propertyBlock = new MaterialPropertyBlock();
 
         if (tileRenderer == null)
@@ -57,7 +57,6 @@ public class Pulpit : MonoBehaviour
         isInitialized = true;
 
         SetDissolveAmount(0f);
-
         UpdateTimerText();
 
         StopAllCoroutines();
@@ -67,7 +66,9 @@ public class Pulpit : MonoBehaviour
     private void Update()
     {
         if (!isInitialized)
+        {
             return;
+        }
 
         timer += Time.deltaTime;
 
@@ -78,16 +79,13 @@ public class Pulpit : MonoBehaviour
         if (!spawnTriggered && timer >= spawnTime)
         {
             spawnTriggered = true;
-
             OnSpawnNext?.Invoke(this);
         }
 
         if (remainingTime <= dissolveDuration)
         {
             float dissolveProgress = 1f - (remainingTime / dissolveDuration);
-
             dissolveProgress = Mathf.Clamp01(dissolveProgress);
-
             dissolveProgress = Mathf.SmoothStep(0f, 1f, dissolveProgress);
 
             SetDissolveAmount(dissolveProgress);
@@ -96,9 +94,7 @@ public class Pulpit : MonoBehaviour
         if (timer >= lifetime)
         {
             SetDissolveAmount(1f);
-
             OnDestroyed?.Invoke(this);
-
             Destroy(gameObject);
         }
     }
@@ -114,11 +110,9 @@ public class Pulpit : MonoBehaviour
             elapsed += Time.deltaTime;
 
             float t = Mathf.Clamp01(elapsed / spawnDuration);
-
             t = 1f - Mathf.Pow(1f - t, 3f);
 
             float scaleMultiplier = Mathf.Lerp(0f, spawnOvershoot, t);
-
             transform.localScale = originalScale * scaleMultiplier;
 
             yield return null;
@@ -127,7 +121,6 @@ public class Pulpit : MonoBehaviour
         transform.localScale = originalScale * spawnOvershoot;
 
         elapsed = 0f;
-
         float settleDuration = spawnDuration * 0.5f;
 
         while (elapsed < settleDuration)
@@ -135,7 +128,6 @@ public class Pulpit : MonoBehaviour
             elapsed += Time.deltaTime;
 
             float t = Mathf.Clamp01(elapsed / settleDuration);
-
             t = Mathf.SmoothStep(0f, 1f, t);
 
             transform.localScale = Vector3.Lerp(originalScale * spawnOvershoot, originalScale, t);
@@ -148,23 +140,24 @@ public class Pulpit : MonoBehaviour
 
     private void SetDissolveAmount(float amount)
     {
-        if (tileRenderer == null)
+        if (tileRenderer == null || propertyBlock == null)
+        {
             return;
+        }
 
         tileRenderer.GetPropertyBlock(propertyBlock);
-
         propertyBlock.SetFloat(DissolveAmountHash, amount);
-
         tileRenderer.SetPropertyBlock(propertyBlock);
     }
 
     private void UpdateTimerText()
     {
         if (timerText == null)
+        {
             return;
+        }
 
         float remainingTime = Mathf.Max(0f, lifetime - timer);
-
         timerText.text = remainingTime.ToString("0.00");
     }
 

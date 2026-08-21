@@ -18,25 +18,30 @@ public class Doofus : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private Vector3 movementInput;
-
     private bool isGrounded;
     private bool isRunning;
     private bool jumpedRecently;
     private static readonly int MoveSpeedHash = Animator.StringToHash("MoveSpeed");
-
     private static readonly int IsGroundedHash = Animator.StringToHash("IsGrounded");
-
     private static readonly int VerticalVelocityHash = Animator.StringToHash("VerticalVelocity");
-
     private static readonly int JumpHash = Animator.StringToHash("Jump");
 
     private void Awake()
     {
+        InitializeReferences();
+    }
+
+    private void InitializeReferences()
+    {
         if (rb == null)
+        {
             rb = GetComponent<Rigidbody>();
+        }
 
         if (animator == null)
+        {
             animator = GetComponentInChildren<Animator>();
+        }
 
         if (rb == null)
         {
@@ -49,7 +54,6 @@ public class Doofus : MonoBehaviour
         {
             Debug.LogError("Doofus: Animator is missing.");
             enabled = false;
-            return;
         }
     }
 
@@ -79,26 +83,37 @@ public class Doofus : MonoBehaviour
 
     private void ReadInput()
     {
+        if (rb == null)
+        {
+            return;
+        }
+
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
         movementInput = new Vector3(horizontal, 0f, vertical);
 
-        if (movementInput.sqrMagnitude > 1f){
+        if (movementInput.sqrMagnitude > 1f)
+        {
             movementInput.Normalize();
         }
 
-        isRunning = movementInput.sqrMagnitude > 0.01f && (Input.GetKey(KeyCode.LeftShift) ||Input.GetKey(KeyCode.RightShift));
+        isRunning = movementInput.sqrMagnitude > 0.01f && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+    }
+
+    private bool HasMovementInput()
+    {
+        return movementInput.sqrMagnitude > 0.01f;
     }
 
     private void HandleMovement()
     {
-        if (movementInput.sqrMagnitude < 0.01f){
+        if (!HasMovementInput())
+        {
             return;
         }
 
         float speed = isRunning ? runSpeed : walkSpeed;
-
         Vector3 movement = movementInput * speed * Time.fixedDeltaTime;
 
         rb.MovePosition(rb.position + movement);
@@ -106,12 +121,12 @@ public class Doofus : MonoBehaviour
 
     private void HandleRotation()
     {
-        if (movementInput.sqrMagnitude < 0.01f){
+        if (!HasMovementInput())
+        {
             return;
         }
 
         Quaternion targetRotation = Quaternion.LookRotation(movementInput);
-
         Quaternion newRotation = Quaternion.Slerp(rb.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
 
         rb.MoveRotation(newRotation);
@@ -120,10 +135,14 @@ public class Doofus : MonoBehaviour
     private void HandleJump()
     {
         if (!Input.GetKeyDown(KeyCode.Space))
+        {
             return;
+        }
 
         if (!isGrounded)
+        {
             return;
+        }
 
         isGrounded = false;
         jumpedRecently = true;
@@ -191,20 +210,20 @@ public class Doofus : MonoBehaviour
 
     private void UpdateAnimator()
     {
-        if (animator == null || rb == null){
+        if (animator == null || rb == null)
+        {
             return;
         }
 
         float animationSpeed = 0f;
 
-        if (movementInput.sqrMagnitude > 0.01f){
+        if (HasMovementInput())
+        {
             animationSpeed = isRunning ? 1f : 0.5f;
         }
 
         animator.SetFloat(MoveSpeedHash, animationSpeed, 0.1f, Time.deltaTime);
-
         animator.SetBool(IsGroundedHash, isGrounded);
-
         animator.SetFloat(VerticalVelocityHash, rb.linearVelocity.y);
     }
 }

@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -26,6 +25,13 @@ public class PulpitSpawner : MonoBehaviour
 
     private void Start()
     {
+        if (pulpitPrefab == null)
+        {
+            Debug.LogError("PulpitSpawner: pulpitPrefab is not assigned.", this);
+            enabled = false;
+            return;
+        }
+
         SpawnFirstPulpit();
     }
 
@@ -35,8 +41,12 @@ public class PulpitSpawner : MonoBehaviour
 
         currentPulpit = SpawnPulpit(startPosition);
 
-        TileScoreTrigger scoreTrigger =
-            currentPulpit.GetComponentInChildren<TileScoreTrigger>();
+        if (currentPulpit == null)
+        {
+            return;
+        }
+
+        TileScoreTrigger scoreTrigger = currentPulpit.GetComponentInChildren<TileScoreTrigger>();
 
         if (scoreTrigger != null)
         {
@@ -46,10 +56,14 @@ public class PulpitSpawner : MonoBehaviour
 
     private Pulpit SpawnPulpit(Vector3 position)
     {
+        if (pulpitPrefab == null)
+        {
+            return null;
+        }
+
         Pulpit newPulpit = Instantiate(pulpitPrefab, position, Quaternion.identity);
 
         newPulpit.Initialize();
-
         newPulpit.OnSpawnNext += HandleSpawnNext;
         newPulpit.OnDestroyed += HandleDestroyed;
 
@@ -59,7 +73,9 @@ public class PulpitSpawner : MonoBehaviour
     private void HandleSpawnNext(Pulpit source)
     {
         if (source != currentPulpit)
+        {
             return;
+        }
 
         Vector3 nextPosition = GetNextPosition();
 
@@ -67,28 +83,30 @@ public class PulpitSpawner : MonoBehaviour
         currentPulpit = SpawnPulpit(nextPosition);
     }
 
-
     private Vector3 GetNextPosition()
     {
-        List<Vector3> availableDirections =
-            new List<Vector3>(directions);
+        if (currentPulpit == null)
+        {
+            return transform.position;
+        }
+
+        List<Vector3> availableDirections = new List<Vector3>(directions);
 
         if (lastDirection != Vector3.zero)
         {
             availableDirections.Remove(-lastDirection);
         }
 
-        Vector3 chosenDirection =
-            availableDirections[
-                Random.Range(0, availableDirections.Count)
-            ];
+        if (availableDirections.Count == 0)
+        {
+            return currentPulpit.transform.position;
+        }
 
+        Vector3 chosenDirection = availableDirections[Random.Range(0, availableDirections.Count)];
         lastDirection = chosenDirection;
 
         float distance = tileSize + gap;
-
-        return currentPulpit.transform.position +
-               chosenDirection * distance;
+        return currentPulpit.transform.position + chosenDirection * distance;
     }
 
     private void HandleDestroyed(Pulpit destroyed)

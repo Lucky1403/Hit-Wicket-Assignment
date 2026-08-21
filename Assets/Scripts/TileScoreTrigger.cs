@@ -18,10 +18,14 @@ public class TileScoreTrigger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!scoringEnabled || hasBeenScored)
+        {
             return;
+        }
 
         if (!other.CompareTag("Player"))
+        {
             return;
+        }
 
         hasBeenScored = true;
 

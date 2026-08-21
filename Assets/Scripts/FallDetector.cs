@@ -23,13 +23,17 @@ public class FallDetector : MonoBehaviour
 
     private void Update()
     {
-        if (isFallingToDeath)
-            return;
-
-        if (transform.position.y <= fallStartHeight)
+        if (isFallingToDeath || !IsBelowFallThreshold())
         {
-            StartCoroutine(HandleFall());
+            return;
         }
+
+        StartCoroutine(HandleFall());
+    }
+
+    private bool IsBelowFallThreshold()
+    {
+        return transform.position.y <= fallStartHeight;
     }
 
     private IEnumerator HandleFall()
@@ -55,4 +59,4 @@ public class FallDetector : MonoBehaviour
             GameOverManager.Instance.GameOver();
         }
     }
-}   
+}

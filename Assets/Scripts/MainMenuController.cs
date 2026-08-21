@@ -4,15 +4,17 @@ using System.Collections;
 
 public class MainMenuController : MonoBehaviour
 {
+    private const int GameSceneIndex = 1;
+
     [Header("Fade Settings")]
     [SerializeField] private CanvasGroup fadePanel;
     [SerializeField] private float fadeDuration = 2f;
+
     [Header("Sound Settings")]
     [SerializeField] private AudioClip UIButtonAudioClip;
     [SerializeField] private AudioSource audioSource;
 
     private bool isLoading;
-
     private static MainMenuController instance;
 
     private void Awake()
@@ -29,6 +31,11 @@ public class MainMenuController : MonoBehaviour
 
     private void Start()
     {
+        ConfigureFadePanel();
+    }
+
+    private void ConfigureFadePanel()
+    {
         if (fadePanel != null)
         {
             fadePanel.alpha = 0f;
@@ -39,15 +46,26 @@ public class MainMenuController : MonoBehaviour
     public void PlayGame()
     {
         if (isLoading)
+        {
             return;
+        }
 
         if (fadePanel == null)
         {
             Debug.LogError("MainMenuController: fadePanel is not assigned.", this);
             return;
         }
-        audioSource.PlayOneShot(UIButtonAudioClip);
+
+        PlayButtonAudio();
         StartCoroutine(FadeAndLoadScene());
+    }
+
+    private void PlayButtonAudio()
+    {
+        if (audioSource != null && UIButtonAudioClip != null)
+        {
+            audioSource.PlayOneShot(UIButtonAudioClip);
+        }
     }
 
     private IEnumerator FadeAndLoadScene()
@@ -57,11 +75,8 @@ public class MainMenuController : MonoBehaviour
         fadePanel.blocksRaycasts = true;
 
         yield return StartCoroutine(Fade(0f, 1f));
-
-        yield return SceneManager.LoadSceneAsync(1);
-
+        yield return SceneManager.LoadSceneAsync(GameSceneIndex);
         yield return null;
-
         yield return StartCoroutine(Fade(1f, 0f));
 
         fadePanel.blocksRaycasts = false;
@@ -77,12 +92,7 @@ public class MainMenuController : MonoBehaviour
             elapsed += Time.unscaledDeltaTime;
 
             float progress = Mathf.Clamp01(elapsed / fadeDuration);
-
-            fadePanel.alpha = Mathf.Lerp(
-                startAlpha,
-                endAlpha,
-                progress
-            );
+            fadePanel.alpha = Mathf.Lerp(startAlpha, endAlpha, progress);
 
             yield return null;
         }
@@ -93,7 +103,7 @@ public class MainMenuController : MonoBehaviour
     public void QuitGame()
     {
         Debug.Log("Game is exiting");
-        audioSource.PlayOneShot(UIButtonAudioClip);
+        PlayButtonAudio();
         Application.Quit();
     }
 }
