@@ -103,14 +103,14 @@ highest score.**
 
 ## 🎮 Controls
 
-  Key                            Action
-  ------------------------------ ---------------
-  `W`                            Move Forward
-  `A`                            Move Left
-  `S`                            Move Backward
-  `D`                            Move Right
-  `Left Shift` / `Right Shift`   Run
-  `Space`                        Jump
+| Key | Action |
+|-----|--------|
+| `W` | Move Forward |
+| `A` | Move Left |
+| `S` | Move Backward |
+| `D` | Move Right |
+| `Left Shift` / `Right Shift` | Run |
+| `Space` | Jump |
 
 ------------------------------------------------------------------------
 
@@ -141,5 +141,5 @@ highest score.**
 ## 👨‍💻 Developer
 
 **Lucky Kumar**\
-B.Tech Computer Science Engineering -- Gaming Technology\
+B.Tech Computer Science Engineering - Gaming Technology\
 VIT Bhopal University
