@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class Pulpit : MonoBehaviour
@@ -12,17 +13,28 @@ public class Pulpit : MonoBehaviour
     [Header("Next Pulpit")]
     [SerializeField] private float spawnTime = 2.5f;
 
-    [Header("Fade")]
-    [SerializeField] private float fadeDuration = 1.5f;
+    [Header("Vortex Disappear")]
+    [SerializeField] private float vortexDuration = 1.2f;
+    [SerializeField] private float sinkDistance = 0.4f;
+    [SerializeField] private float finalScale = 0.05f;
+    [SerializeField] private float rotationAmount = 1080f;
 
     [Header("UI")]
     [SerializeField] private TMP_Text timerText;
+
     private float lifetime;
     private float timer;
 
     private bool spawnTriggered;
+    private bool isDisappearing;
 
-    private readonly List<Material> materials = new List<Material>();
+    private Vector3 originalScale;
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
+
+    private readonly List<Material> materials =
+        new List<Material>();
+
     public event Action<Pulpit> OnSpawnNext;
     public event Action<Pulpit> OnDestroyed;
 
@@ -30,6 +42,10 @@ public class Pulpit : MonoBehaviour
 
     private void Awake()
     {
+        originalScale = transform.localScale;
+        originalPosition = transform.position;
+        originalRotation = transform.rotation;
+
         CollectMaterials();
     }
 
@@ -40,18 +56,20 @@ public class Pulpit : MonoBehaviour
 
         foreach (Renderer renderer in allRenderers)
         {
-            if (renderer.GetComponent<TMP_Text>() != null)
-                continue;
+            // Create material instances so this tile does not affect
+            // materials used by other instantiated tiles.
+            Material[] rendererMaterials = renderer.materials;
 
-            foreach (Material material in renderer.materials)
+            foreach (Material material in rendererMaterials)
             {
-                if (material != null)
+                if (material != null && !materials.Contains(material))
                 {
                     materials.Add(material);
                 }
             }
         }
     }
+
     public void Initialize()
     {
         lifetime = UnityEngine.Random.Range(
@@ -59,8 +77,20 @@ public class Pulpit : MonoBehaviour
             maxLifetime
         );
 
+        // Make sure the vortex animation can fit inside
+        // the randomly generated lifetime.
+        vortexDuration = Mathf.Min(
+            vortexDuration,
+            lifetime
+        );
+
         timer = 0f;
         spawnTriggered = false;
+        isDisappearing = false;
+
+        transform.localScale = originalScale;
+        transform.position = originalPosition;
+        transform.rotation = originalRotation;
 
         SetAlpha(1f);
 
@@ -69,6 +99,9 @@ public class Pulpit : MonoBehaviour
 
     private void Update()
     {
+        if (isDisappearing)
+            return;
+
         timer += Time.deltaTime;
 
         float remainingTime = Mathf.Max(
@@ -78,28 +111,99 @@ public class Pulpit : MonoBehaviour
 
         UpdateTimerText();
 
+        // Spawn the next tile.
         if (!spawnTriggered && timer >= spawnTime)
         {
             spawnTriggered = true;
             OnSpawnNext?.Invoke(this);
         }
 
-        ApplyFade(remainingTime);
-
-        if (timer >= lifetime)
+        // Start the vortex before the lifetime ends.
+        if (remainingTime <= vortexDuration)
         {
-            OnDestroyed?.Invoke(this);
-            Destroy(gameObject);
+            StartCoroutine(VortexDisappear());
         }
     }
 
-    private void ApplyFade(float remainingTime)
+    private IEnumerator VortexDisappear()
     {
-        float fadeT = Mathf.Clamp01(remainingTime / fadeDuration);
+        isDisappearing = true;
 
-        float alpha = Mathf.SmoothStep(0f, 1f, fadeT);
+        // Stop showing a normal countdown during the animation.
+        if (timerText != null)
+        {
+            timerText.text = "0.00";
+        }
 
-        SetAlpha(alpha);
+        Vector3 startScale = transform.localScale;
+        Vector3 startPosition = transform.position;
+        Quaternion startRotation = transform.rotation;
+
+        float elapsed = 0f;
+
+        while (elapsed < vortexDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(
+                elapsed / vortexDuration
+            );
+
+            // Accelerates the animation toward the end.
+            float curvedT = t * t * (3f - 2f * t);
+
+            // SHRINK
+            transform.localScale = Vector3.Lerp(
+                startScale,
+                originalScale * finalScale,
+                curvedT
+            );
+
+            // SINK DOWN
+            transform.position = Vector3.Lerp(
+                startPosition,
+                startPosition + Vector3.down * sinkDistance,
+                curvedT
+            );
+
+            // VORTEX ROTATION
+            float currentRotation =
+                rotationAmount * curvedT;
+
+            transform.rotation =
+                startRotation *
+                Quaternion.Euler(
+                    0f,
+                    currentRotation,
+                    currentRotation * 0.15f
+                );
+
+            // Keep the tile mostly visible initially,
+            // then disappear quickly near the end.
+            float alpha = 1f;
+
+            if (t > 0.55f)
+            {
+                float fadeT =
+                    Mathf.InverseLerp(
+                        0.55f,
+                        1f,
+                        t
+                    );
+
+                alpha = 1f - fadeT;
+            }
+
+            SetAlpha(alpha);
+
+            yield return null;
+        }
+
+        SetAlpha(0f);
+
+        OnDestroyed?.Invoke(this);
+
+        Destroy(gameObject);
     }
 
     private void UpdateTimerText()
@@ -112,7 +216,8 @@ public class Pulpit : MonoBehaviour
             lifetime - timer
         );
 
-        timerText.text = remainingTime.ToString("0.00");
+        timerText.text =
+            remainingTime.ToString("0.00");
     }
 
     private void SetAlpha(float alpha)
@@ -124,17 +229,27 @@ public class Pulpit : MonoBehaviour
 
             if (material.HasProperty("_BaseColor"))
             {
-                Color color = material.GetColor("_BaseColor");
+                Color color =
+                    material.GetColor("_BaseColor");
+
                 color.a = alpha;
 
-                material.SetColor("_BaseColor", color);
+                material.SetColor(
+                    "_BaseColor",
+                    color
+                );
             }
             else if (material.HasProperty("_Color"))
             {
-                Color color = material.GetColor("_Color");
+                Color color =
+                    material.GetColor("_Color");
+
                 color.a = alpha;
 
-                material.SetColor("_Color", color);
+                material.SetColor(
+                    "_Color",
+                    color
+                );
             }
         }
     }
