@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class GameOverManager : MonoBehaviour
@@ -100,5 +101,13 @@ public class GameOverManager : MonoBehaviour
         }
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    
+    private void QuitGame()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
     }
 }
