@@ -2,7 +2,6 @@ using UnityEngine;
 using TMPro;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 
 public class Pulpit : MonoBehaviour
 {
@@ -10,200 +9,153 @@ public class Pulpit : MonoBehaviour
     [SerializeField] private float minLifetime = 4f;
     [SerializeField] private float maxLifetime = 5f;
 
-    [Header("Next Pulpit")]
+    [Header("Next Tile")]
     [SerializeField] private float spawnTime = 2.5f;
 
-    [Header("Vortex Disappear")]
-    [SerializeField] private float vortexDuration = 1.2f;
-    [SerializeField] private float sinkDistance = 0.4f;
-    [SerializeField] private float finalScale = 0.05f;
-    [SerializeField] private float rotationAmount = 1080f;
+    [Header("Vortex Dissolve")]
+    [SerializeField] private float dissolveDuration = 0.5f;
+
+    [Header("Spawn Animation")]
+    [SerializeField] private float spawnDuration = 0.2f;
+    [SerializeField] private float spawnOvershoot = 1.08f;
 
     [Header("UI")]
     [SerializeField] private TMP_Text timerText;
 
+    [Header("Tile Renderer")]
+    [SerializeField] private Renderer tileRenderer;
+
     private float lifetime;
     private float timer;
-
     private bool spawnTriggered;
-    private bool isDisappearing;
-
+    private bool isInitialized;
     private Vector3 originalScale;
-    private Vector3 originalPosition;
-    private Quaternion originalRotation;
-
-    private readonly List<Material> materials =
-        new List<Material>();
-
+    private MaterialPropertyBlock propertyBlock;
+    private static readonly int DissolveAmountHash = Shader.PropertyToID("_DissolveAmount");
     public event Action<Pulpit> OnSpawnNext;
     public event Action<Pulpit> OnDestroyed;
-
     public float LifeTime => lifetime;
 
     private void Awake()
     {
         originalScale = transform.localScale;
-        originalPosition = transform.position;
-        originalRotation = transform.rotation;
 
-        CollectMaterials();
-    }
+        propertyBlock = new MaterialPropertyBlock();
 
-    private void CollectMaterials()
-    {
-        Renderer[] allRenderers =
-            GetComponentsInChildren<Renderer>(true);
-
-        foreach (Renderer renderer in allRenderers)
+        if (tileRenderer == null)
         {
-            // Create material instances so this tile does not affect
-            // materials used by other instantiated tiles.
-            Material[] rendererMaterials = renderer.materials;
-
-            foreach (Material material in rendererMaterials)
-            {
-                if (material != null && !materials.Contains(material))
-                {
-                    materials.Add(material);
-                }
-            }
+            tileRenderer = GetComponentInChildren<Renderer>();
         }
     }
 
     public void Initialize()
     {
-        lifetime = UnityEngine.Random.Range(
-            minLifetime,
-            maxLifetime
-        );
-
-        // Make sure the vortex animation can fit inside
-        // the randomly generated lifetime.
-        vortexDuration = Mathf.Min(
-            vortexDuration,
-            lifetime
-        );
+        lifetime = UnityEngine.Random.Range(minLifetime, maxLifetime);
 
         timer = 0f;
         spawnTriggered = false;
-        isDisappearing = false;
+        isInitialized = true;
 
-        transform.localScale = originalScale;
-        transform.position = originalPosition;
-        transform.rotation = originalRotation;
-
-        SetAlpha(1f);
+        SetDissolveAmount(0f);
 
         UpdateTimerText();
+
+        StopAllCoroutines();
+        StartCoroutine(SpawnAnimation());
     }
 
     private void Update()
     {
-        if (isDisappearing)
+        if (!isInitialized)
             return;
 
         timer += Time.deltaTime;
 
-        float remainingTime = Mathf.Max(
-            0f,
-            lifetime - timer
-        );
+        float remainingTime = Mathf.Max(0f, lifetime - timer);
 
         UpdateTimerText();
 
-        // Spawn the next tile.
         if (!spawnTriggered && timer >= spawnTime)
         {
             spawnTriggered = true;
+
             OnSpawnNext?.Invoke(this);
         }
 
-        // Start the vortex before the lifetime ends.
-        if (remainingTime <= vortexDuration)
+        if (remainingTime <= dissolveDuration)
         {
-            StartCoroutine(VortexDisappear());
+            float dissolveProgress = 1f - (remainingTime / dissolveDuration);
+
+            dissolveProgress = Mathf.Clamp01(dissolveProgress);
+
+            dissolveProgress = Mathf.SmoothStep(0f, 1f, dissolveProgress);
+
+            SetDissolveAmount(dissolveProgress);
+        }
+
+        if (timer >= lifetime)
+        {
+            SetDissolveAmount(1f);
+
+            OnDestroyed?.Invoke(this);
+
+            Destroy(gameObject);
         }
     }
 
-    private IEnumerator VortexDisappear()
+    private IEnumerator SpawnAnimation()
     {
-        isDisappearing = true;
-
-        // Stop showing a normal countdown during the animation.
-        if (timerText != null)
-        {
-            timerText.text = "0.00";
-        }
-
-        Vector3 startScale = transform.localScale;
-        Vector3 startPosition = transform.position;
-        Quaternion startRotation = transform.rotation;
+        transform.localScale = Vector3.zero;
 
         float elapsed = 0f;
 
-        while (elapsed < vortexDuration)
+        while (elapsed < spawnDuration)
         {
             elapsed += Time.deltaTime;
 
-            float t = Mathf.Clamp01(
-                elapsed / vortexDuration
-            );
+            float t = Mathf.Clamp01(elapsed / spawnDuration);
 
-            // Accelerates the animation toward the end.
-            float curvedT = t * t * (3f - 2f * t);
+            t = 1f - Mathf.Pow(1f - t, 3f);
 
-            // SHRINK
-            transform.localScale = Vector3.Lerp(
-                startScale,
-                originalScale * finalScale,
-                curvedT
-            );
+            float scaleMultiplier = Mathf.Lerp(0f, spawnOvershoot, t);
 
-            // SINK DOWN
-            transform.position = Vector3.Lerp(
-                startPosition,
-                startPosition + Vector3.down * sinkDistance,
-                curvedT
-            );
-
-            // VORTEX ROTATION
-            float currentRotation =
-                rotationAmount * curvedT;
-
-            transform.rotation =
-                startRotation *
-                Quaternion.Euler(
-                    0f,
-                    currentRotation,
-                    currentRotation * 0.15f
-                );
-
-            // Keep the tile mostly visible initially,
-            // then disappear quickly near the end.
-            float alpha = 1f;
-
-            if (t > 0.55f)
-            {
-                float fadeT =
-                    Mathf.InverseLerp(
-                        0.55f,
-                        1f,
-                        t
-                    );
-
-                alpha = 1f - fadeT;
-            }
-
-            SetAlpha(alpha);
+            transform.localScale = originalScale * scaleMultiplier;
 
             yield return null;
         }
 
-        SetAlpha(0f);
+        transform.localScale = originalScale * spawnOvershoot;
 
-        OnDestroyed?.Invoke(this);
+        elapsed = 0f;
 
-        Destroy(gameObject);
+        float settleDuration = spawnDuration * 0.5f;
+
+        while (elapsed < settleDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / settleDuration);
+
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            transform.localScale = Vector3.Lerp(originalScale * spawnOvershoot, originalScale, t);
+
+            yield return null;
+        }
+
+        transform.localScale = originalScale;
+    }
+
+    private void SetDissolveAmount(float amount)
+    {
+        if (tileRenderer == null)
+            return;
+
+        tileRenderer.GetPropertyBlock(propertyBlock);
+
+        propertyBlock.SetFloat(DissolveAmountHash, amount);
+
+        tileRenderer.SetPropertyBlock(propertyBlock);
     }
 
     private void UpdateTimerText()
@@ -211,59 +163,14 @@ public class Pulpit : MonoBehaviour
         if (timerText == null)
             return;
 
-        float remainingTime = Mathf.Max(
-            0f,
-            lifetime - timer
-        );
+        float remainingTime = Mathf.Max(0f, lifetime - timer);
 
-        timerText.text =
-            remainingTime.ToString("0.00");
-    }
-
-    private void SetAlpha(float alpha)
-    {
-        foreach (Material material in materials)
-        {
-            if (material == null)
-                continue;
-
-            if (material.HasProperty("_BaseColor"))
-            {
-                Color color =
-                    material.GetColor("_BaseColor");
-
-                color.a = alpha;
-
-                material.SetColor(
-                    "_BaseColor",
-                    color
-                );
-            }
-            else if (material.HasProperty("_Color"))
-            {
-                Color color =
-                    material.GetColor("_Color");
-
-                color.a = alpha;
-
-                material.SetColor(
-                    "_Color",
-                    color
-                );
-            }
-        }
+        timerText.text = remainingTime.ToString("0.00");
     }
 
     private void OnDestroy()
     {
-        foreach (Material material in materials)
-        {
-            if (material != null)
-            {
-                Destroy(material);
-            }
-        }
-
-        materials.Clear();
+        OnSpawnNext = null;
+        OnDestroyed = null;
     }
 }

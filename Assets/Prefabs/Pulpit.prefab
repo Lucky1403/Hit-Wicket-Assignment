@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ad713c98524bd6b4b86772bc54cd716d, type: 2}
+  - {fileID: 2100000, guid: a5a02840d00d36b408649f7a7f60184f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -127,8 +127,11 @@ MonoBehaviour:
   minLifetime: 4
   maxLifetime: 5
   spawnTime: 2.5
-  fadeDuration: 1.5
+  dissolveDuration: 1.5
+  spawnDuration: 0.25
+  spawnOvershoot: 1.12
   timerText: {fileID: 8932507203681259012}
+  tileRenderer: {fileID: 2542252699143654604}
 --- !u!1 &4003033240035648632
 GameObject:
   m_ObjectHideFlags: 0
